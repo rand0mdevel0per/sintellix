@@ -1,0 +1,12 @@
+{
+  "name": "sintellix",
+  "version": "0.1.0",
+  "description": "Sintellix Neural Network Framework",
+  "dependencies": [
+    "nlohmann-json",
+    "protobuf",
+    "zstd",
+    "pybind11"
+  ],
+  "builtin-baseline": "3b3bd424827a1f7f4813216f6b32b6c61e386b2e"
+}

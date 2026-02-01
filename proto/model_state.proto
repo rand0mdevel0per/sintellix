@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package sintellix;
+
+import "neuron_config.proto";
+
+// Matrix data storage
+message Matrix {
+  uint32 rows = 1;
+  uint32 cols = 2;
+  repeated float data = 3 [packed=true];  // Row-major order
+}
+
+// KFE (Knowledge Feature Encoding) slot
+message KFESlot {
+  string key = 1;                         // KFE identifier
+  Matrix kfe_matrix = 2;                  // 256×256 or dim×dim matrix
+  uint64 access_count = 3;                // Access frequency
+  uint64 last_access_time = 4;            // Timestamp
+}
+
+// Single neuron state
+message NeuronState {
+  // Core matrices
+  Matrix p_matrix = 1;                    // Current state
+  Matrix p_stable = 2;                    // Stable state
+  Matrix w_predict = 3;                   // Prediction weights
+  Matrix m_kfe = 4;                       // KFE matrix
+  Matrix deviation = 5;                   // Deviation matrix
+  Matrix ps_aggregate = 6;                // Aggregated state
+
+  // Temporal history (8 frames)
+  repeated Matrix p_history = 7;
+
+  // Port transformation matrices
+  repeated Matrix port_in_matrices = 8;   // 4 input ports
+  repeated Matrix port_out_matrices = 9;  // 4 output ports
+
+  // Convolution kernels (4 ports × 8 kernels)
+  repeated Matrix conv_kernels = 10;
+
+  // SSM state
+  repeated float h_state = 11 [packed=true];
+
+  // RWKV state
+  repeated float wkv_state = 12 [packed=true];
+
+  // Adam optimizer state
+  Matrix adam_m = 13;
+  Matrix adam_v = 14;
+  uint64 adam_step = 15;
+
+  // KFE local storage (16 slots)
+  repeated KFESlot kfe_local = 16;
+
+  // DDPM noise schedule
+  repeated float noise_schedule = 17 [packed=true];
+}
+
+// KFE Manager state
+message KFEManagerState {
+  repeated KFESlot kfe_storage = 1;       // All KFE slots
+  uint32 total_slots = 2;
+  uint32 active_slots = 3;
+}
+
+// Complete model state
+message ModelState {
+  NeuronConfig config = 1;                // Model configuration
+
+  // All neuron states (grid_x × grid_y × grid_z)
+  repeated NeuronState neurons = 2;
+
+  // KFE Manager state
+  KFEManagerState kfe_manager = 3;
+
+  // Global statistics
+  message Statistics {
+    uint64 total_steps = 1;
+    uint64 total_tokens = 2;
+    float average_loss = 3;
+  }
+  Statistics stats = 4;
+
+  // Metadata
+  string version = 5;                     // Model version
+  uint64 save_timestamp = 6;              // Save time
+  string description = 7;                 // Optional description
+}

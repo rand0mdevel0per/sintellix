@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package sintellix;
+
+// Neuron configuration
+message NeuronConfig {
+  // Basic dimensions
+  uint32 dim = 1;                    // Neuron dimension (128/256/512/1024)
+  uint32 num_heads = 2;              // Number of attention heads (default: 8)
+
+  // Grid configuration
+  message GridSize {
+    uint32 x = 1;
+    uint32 y = 2;
+    uint32 z = 3;
+  }
+  GridSize grid_size = 3;            // Neuron grid dimensions
+
+  // Temporal configuration
+  uint32 temporal_frames = 4;        // Number of temporal frames (default: 8)
+
+  // Module switches for ablation study
+  message ModuleSwitches {
+    bool enable_multi_head = 1;
+    bool enable_global_aggregation = 2;
+    bool enable_noise_filter = 3;
+    bool enable_temporal_attention = 4;
+    bool enable_fxaa_layer = 5;
+    bool enable_kfe_memory = 6;
+    bool enable_ssm = 7;
+    bool enable_rwkv = 8;
+    bool enable_ddpm = 9;
+  }
+  ModuleSwitches modules = 5;
+
+  // Storage configuration
+  message StorageConfig {
+    uint64 gpu_cache_size_mb = 1;    // GPU cache size in MB
+    uint64 ram_cache_size_mb = 2;    // RAM cache size in MB
+    string disk_cache_path = 3;      // Disk cache directory
+    uint32 eviction_threshold = 4;   // Access count threshold for eviction
+  }
+  StorageConfig storage = 6;
+
+  // Optimization configuration
+  message OptimizationConfig {
+    bool use_tensor_cores = 1;       // Use Tensor Cores (WMMA)
+    bool use_fused_kernels = 2;      // Use fused kernels
+    bool use_kv_cache = 3;           // Use KV-Cache
+    uint32 kv_cache_size = 4;        // KV-Cache size (default: 512)
+  }
+  OptimizationConfig optimization = 7;
+
+  // Noise filter configuration
+  message NoiseFilterConfig {
+    float ema_alpha = 1;             // EMA smoothing factor (default: 0.1)
+    float threshold_multiplier = 2;  // Threshold = mean + multiplier * std
+  }
+  NoiseFilterConfig noise_filter = 8;
+
+  // Global aggregation configuration
+  message GlobalAggregationConfig {
+    uint32 top_k = 1;                // Top-K neurons for sparse attention
+    float attention_dropout = 2;     // Attention dropout rate
+  }
+  GlobalAggregationConfig global_aggregation = 9;
+}
