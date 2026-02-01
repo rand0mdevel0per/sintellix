@@ -100,6 +100,7 @@ NeuronModel::NeuronModel(const NeuronConfig& config)
     , grid_z_(config.grid_size().z())
     , total_neurons_(grid_x_ * grid_y_ * grid_z_)
     , dim_(config.dim())
+    , multi_gpu_enabled_(false)
 {
     // Create tiered storage manager
     storage_manager_ = std::make_unique<TieredStorageManager>(config);
@@ -343,6 +344,39 @@ bool NeuronModel::load_state(const std::string& path) {
     // (Full implementation would restore all neuron states)
 
     return true;
+}
+
+// Multi-GPU support methods
+bool NeuronModel::enable_multi_gpu(const std::vector<int>& device_ids) {
+    try {
+        // Create multi-GPU manager
+        multi_gpu_manager_ = std::make_unique<MultiGPUManager>(device_ids);
+
+        // Distribute neurons across devices
+        int num_devices = multi_gpu_manager_->get_device_count();
+        neuron_distribution_ = distribute_neurons(total_neurons_, num_devices);
+
+        multi_gpu_enabled_ = true;
+
+        std::cout << "Multi-GPU enabled with " << num_devices << " devices" << std::endl;
+        for (size_t i = 0; i < neuron_distribution_.size(); i++) {
+            std::cout << "  Device " << i << ": "
+                      << neuron_distribution_[i].second << " neurons" << std::endl;
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to enable multi-GPU: " << e.what() << std::endl;
+        multi_gpu_enabled_ = false;
+        return false;
+    }
+}
+
+int NeuronModel::get_gpu_count() const {
+    if (multi_gpu_manager_) {
+        return multi_gpu_manager_->get_device_count();
+    }
+    return 1;  // Single GPU mode
 }
 
 } // namespace sintellix

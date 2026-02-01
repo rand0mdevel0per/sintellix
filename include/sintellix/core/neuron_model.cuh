@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include "sintellix/core/neuron.cuh"
 #include "sintellix/core/config.hpp"
+#include "sintellix/core/multi_gpu.cuh"
 #include "sintellix/storage/tiered_storage.cuh"
 
 namespace sintellix {
@@ -116,6 +117,23 @@ public:
      */
     KFEManager& get_kfe_manager() { return kfe_manager_; }
 
+    /**
+     * Enable multi-GPU mode
+     * @param device_ids Vector of GPU device IDs to use (empty = use all)
+     * @return true if successful
+     */
+    bool enable_multi_gpu(const std::vector<int>& device_ids = {});
+
+    /**
+     * Check if multi-GPU mode is enabled
+     */
+    bool is_multi_gpu_enabled() const { return multi_gpu_enabled_; }
+
+    /**
+     * Get number of GPUs being used
+     */
+    int get_gpu_count() const;
+
 private:
     NeuronConfig config_;
     std::vector<std::unique_ptr<Neuron>> neurons_;
@@ -128,6 +146,11 @@ private:
 
     // CUDA streams for parallel execution
     std::vector<cudaStream_t> streams_;
+
+    // Multi-GPU support
+    std::unique_ptr<MultiGPUManager> multi_gpu_manager_;
+    bool multi_gpu_enabled_;
+    std::vector<std::pair<int, int>> neuron_distribution_;  // (start_idx, count) per device
 
     // Helper methods
     int get_neuron_index(int x, int y, int z) const {
