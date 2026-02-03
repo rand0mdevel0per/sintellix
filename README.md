@@ -228,7 +228,7 @@ Contributions are welcome! Please follow these guidelines:
 
 ```bash
 # Clone repository
-git clone https://github.com/sintellix/sintellix.git
+git clone https://github.com/rand0mdevel0per/sintellix.git
 cd sintellix
 
 # Install dependencies
@@ -252,7 +252,7 @@ If you use Sintellix in your research, please cite:
   title={Sintellix: High-Performance Neural Network Framework with 3D Grid Architecture},
   author={randomdevel0per and Anthropic Claude Sonnet 4.5},
   year={2026},
-  url={https://github.com/sintellix/sintellix}
+  url={https://github.com/rand0mdevel0per/sintellix}
 }
 ```
 
