@@ -112,8 +112,8 @@ void MultiGPUManager::prefetch_to_device(void* ptr, size_t size, int device_id) 
     location.type = cudaMemLocationTypeDevice;
     location.id = device_id;
 
-    cudaStream_t stream = get_stream(device_id);
-    cudaError_t err = cudaMemPrefetchAsync(ptr, size, location, stream);
+    // Note: CUDA 13.0 API takes flags instead of stream
+    cudaError_t err = cudaMemPrefetchAsync(ptr, size, location, 0);
     if (err != cudaSuccess) {
         std::cerr << "Warning: cudaMemPrefetchAsync failed: "
                   << cudaGetErrorString(err) << std::endl;

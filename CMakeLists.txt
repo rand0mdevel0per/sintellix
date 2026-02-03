@@ -6,33 +6,32 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
-# Fetch nmdb as external dependency
-# Temporarily disabled due to Windows compatibility issues (Task #4)
-# include(FetchContent)
-# FetchContent_Declare(
-#     nmdb
-#     GIT_REPOSITORY https://github.com/rand0mdevel0per/nmdb.git
-#     GIT_TAG master
-# )
-# set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-# FetchContent_MakeAvailable(nmdb)
-
-# Add nmdb include directories
-# include_directories(${nmdb_SOURCE_DIR}/include)
-# include_directories(${nmdb_BINARY_DIR})
-
-# Options
-option(USE_HIP "Use HIP instead of CUDA" OFF)
-option(BUILD_PYTHON "Build Python bindings" OFF)
-option(BUILD_TESTS "Build tests" OFF)
-
-# Find dependencies
+# Find CUDA toolkit for imported targets
 find_package(CUDAToolkit REQUIRED)
 
 # Optional dependencies
-find_package(Protobuf)
+# Note: vcpkg uses lowercase package names
+find_package(protobuf CONFIG QUIET)
+if(NOT protobuf_FOUND)
+    find_package(Protobuf)
+endif()
 find_package(nlohmann_json 3.2.0)
 find_package(zstd)
+
+# Fetch nmdb as external dependency
+# Note: nmdb needs Protobuf, so we find it first and pass to nmdb
+include(FetchContent)
+FetchContent_Declare(
+    nmdb
+    GIT_REPOSITORY https://github.com/rand0mdevel0per/nmdb.git
+    GIT_TAG master
+)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(nmdb)
+
+# Add nmdb include directories
+include_directories(${nmdb_SOURCE_DIR}/include)
+include_directories(${nmdb_BINARY_DIR})
 
 # ONNX Runtime (for CLIP model inference)
 find_package(onnxruntime CONFIG)
